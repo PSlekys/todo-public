@@ -40,6 +40,7 @@
     <script>
       const baseURL = "http://127.0.0.1:3000";
 
+      // GET method
       fetch(baseURL)
         .then((res) => res.json())
         .then((data) => {
@@ -49,9 +50,7 @@
             todos.innerHTML += `
               <div class="card">
                   <div class="card-content">
-                      <p class="title">
-                          ${todo.todo}
-                      </p>
+                      <p class="title">${todo.todo}</p>
                   </div>
                   <footer class="card-footer">
                       <p class="card-footer-item">
@@ -62,8 +61,31 @@
             `;
           });
         })
-        .catch((err) => console.log(err));
+        .then(() => {
+          document.querySelectorAll("button.is-danger").forEach((button) => {
+            button.addEventListener("click", (e) => {
+              fetch(
+                baseURL +
+                  "/delete/" +
+                  e.target.parentElement.parentElement.parentElement.children[0].textContent.trim(),
+                {
+                  method: "DELETE",
+                }
+              );
+            });
+          });
+        })
+        .catch((err) => {
+          document.body.innerHTML += `
+            <section>
+              <div class="container" style="color:rgba(220, 10, 10, 0.8); font-size: 1.2em">
+                ${err.message}
+              </div>
+            </section>
+          `;
+        });
 
+      // POST method
       document.forms.add.addEventListener("submit", (e) => {
         e.preventDefault();
 
