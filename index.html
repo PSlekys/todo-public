@@ -40,14 +40,13 @@
     <script>
       const baseURL = "http://127.0.0.1:3000";
 
-      // GET method
-      fetch(baseURL)
-        .then((res) => res.json())
-        .then((data) => {
-          const todos = document.getElementById("todos");
+      // Function to create a card from passed param array
 
-          data.forEach((todo) => {
-            todos.innerHTML += `
+      function addCard(data) {
+        const todos = document.getElementById("todos");
+
+        data.forEach((todo) => {
+          todos.innerHTML += `
               <div class="card">
                   <div class="card-content">
                       <p class="title">${todo.todo}</p>
@@ -59,24 +58,34 @@
                   </footer>
               </div>
             `;
+        });
+
+        addDeletes();
+      }
+
+      // Function to search for all delete buttons and once clicked
+      // removes card element and sends fetch delete request
+
+      function addDeletes() {
+        document.querySelectorAll("button.is-danger").forEach((button) => {
+          button.addEventListener("click", (e) => {
+            const card = e.target.parentElement.parentElement.parentElement;
+            fetch(baseURL + "/delete/" + card.children[0].textContent.trim(), {
+              method: "DELETE",
+            })
+              .then(() => {
+                card.parentElement.removeChild(card);
+              })
+              .catch((err) => console.log(err));
           });
-        })
-        .then(() => {
-          document.querySelectorAll("button.is-danger").forEach((button) => {
-            button.addEventListener("click", (e) => {
-              const card = e.target.parentElement.parentElement.parentElement;
-              fetch(
-                baseURL + "/delete/" + card.children[0].textContent.trim(),
-                {
-                  method: "DELETE",
-                }
-              )
-                .then(() => {
-                  card.parentElement.removeChild(card);
-                })
-                .catch((err) => console.log(err));
-            });
-          });
+        });
+      }
+
+      // GET method
+      fetch(baseURL)
+        .then((res) => res.json())
+        .then((data) => {
+          addCard(data);
         })
         .catch((err) => {
           document.body.innerHTML += `
@@ -98,7 +107,9 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ todo: e.target[0].value }),
-        });
+        })
+          .then((todo) => addCard([{ todo: e.target[0].value }]))
+          .catch((err) => console.log(err));
       });
     </script>
   </body>
